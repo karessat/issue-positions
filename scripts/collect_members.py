@@ -24,6 +24,7 @@ import httpx
 from dotenv import load_dotenv
 
 from api.models import SessionLocal, Member, Chamber, Party
+from scripts.utils.metadata import update_metadata
 
 # Load environment variables
 load_dotenv(project_root / ".env")
@@ -185,6 +186,17 @@ def populate_members(members_data: list[dict], api_key: str):
 
             db.commit()
             print(f"\nComplete: {added} added, {updated} updated")
+
+            # Update metadata
+            total = added + updated
+            update_metadata(
+                db,
+                data_type="members",
+                record_count=total,
+                source="congress_api",
+                notes=f"Fetched from Congress.gov API"
+            )
+            print(f"Updated metadata: {total} members")
 
     finally:
         db.close()

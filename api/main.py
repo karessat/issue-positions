@@ -11,6 +11,7 @@ from .models import (
     Position,
     Bill,
     Vote,
+    DataMetadata,
     Chamber,
     Party,
     VoteChoice,
@@ -209,5 +210,40 @@ def get_member(member_id: str, db: Session = Depends(get_db)):
         ],
         "evidence": {
             "votes": vote_evidence,
+        },
+    }
+
+
+@app.get("/api/metadata")
+def get_metadata(db: Session = Depends(get_db)):
+    """Get data freshness metadata."""
+    metadata_list = db.query(DataMetadata).all()
+
+    result = {}
+    for m in metadata_list:
+        result[m.data_type] = {
+            "last_updated": m.last_updated.isoformat() if m.last_updated else None,
+            "record_count": m.record_count,
+            "source": m.source,
+            "is_stale": m.is_stale,
+            "age_days": m.age_days,
+        }
+
+    # Find the most recent update across all data types
+    if metadata_list:
+        most_recent = max(m.last_updated for m in metadata_list)
+        oldest = min(m.last_updated for m in metadata_list)
+        any_stale = any(m.is_stale for m in metadata_list)
+    else:
+        most_recent = None
+        oldest = None
+        any_stale = True
+
+    return {
+        "data_types": result,
+        "summary": {
+            "last_updated": most_recent.isoformat() if most_recent else None,
+            "oldest_data": oldest.isoformat() if oldest else None,
+            "any_stale": any_stale,
         },
     }

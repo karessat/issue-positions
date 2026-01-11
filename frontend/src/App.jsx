@@ -2,13 +2,25 @@ import { useState, useEffect } from 'react'
 import SpectrumChart from './components/SpectrumChart'
 import MemberPanel from './components/MemberPanel'
 
+function formatDate(isoString) {
+  if (!isoString) return null
+  const date = new Date(isoString)
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+}
+
 function App() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [selectedMember, setSelectedMember] = useState(null)
+  const [metadata, setMetadata] = useState(null)
 
   useEffect(() => {
+    // Fetch positions data
     fetch('/api/issues/trade-policy/positions?chamber=senate')
       .then(res => {
         if (!res.ok) throw new Error('Failed to fetch data')
@@ -22,6 +34,12 @@ function App() {
         setError(err.message)
         setLoading(false)
       })
+
+    // Fetch metadata for last updated info
+    fetch('/api/metadata')
+      .then(res => res.json())
+      .then(setMetadata)
+      .catch(() => {}) // Silently fail - metadata is optional
   }, [])
 
   if (loading) {
@@ -210,6 +228,17 @@ function App() {
           <p className="text-xs text-gray-400 mt-2">
             Data sources: Congress.gov voting records
           </p>
+          {metadata?.summary?.last_updated && (
+            <p className="text-xs text-gray-400 mt-2 flex items-center justify-center gap-1">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Data last updated: {formatDate(metadata.summary.last_updated)}
+              {metadata.summary.any_stale && (
+                <span className="text-amber-500 ml-1">(refresh recommended)</span>
+              )}
+            </p>
+          )}
         </div>
       </footer>
     </div>

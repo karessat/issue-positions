@@ -257,3 +257,35 @@ class Vote(Base):
 
     def __repr__(self):
         return f"<Vote {self.member_id} on {self.bill_id}: {self.vote.value}>"
+
+
+class DataMetadata(Base):
+    """
+    Tracks when different data types were last updated.
+
+    Used to determine if data is stale and needs refreshing.
+    Data is considered stale if it's more than 30 days old.
+    """
+    __tablename__ = "data_metadata"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    data_type = Column(String(50), nullable=False, unique=True,
+                       doc="Type of data: 'members', 'votes', 'positions'")
+    last_updated = Column(DateTime, nullable=False, default=datetime.utcnow)
+    record_count = Column(Integer, default=0, doc="Number of records at last update")
+    source = Column(String(100), doc="Data source: 'congress_api', 'seed_file', etc.")
+    notes = Column(Text, doc="Any notes about the update")
+
+    def __repr__(self):
+        return f"<DataMetadata {self.data_type}: {self.last_updated}>"
+
+    @property
+    def is_stale(self) -> bool:
+        """Check if data is more than 30 days old."""
+        from datetime import timedelta
+        return datetime.utcnow() - self.last_updated > timedelta(days=30)
+
+    @property
+    def age_days(self) -> int:
+        """Return the age of the data in days."""
+        return (datetime.utcnow() - self.last_updated).days

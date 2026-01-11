@@ -18,6 +18,7 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 from api.models import SessionLocal, Member, Chamber, Party
+from scripts.utils.metadata import update_metadata
 
 
 SEED_FILE = project_root / "data" / "seed" / "senators_119.json"
@@ -95,6 +96,17 @@ def seed_members(data: dict):
 
         db.commit()
         print(f"Seeding complete: {added} added, {updated} updated")
+
+        # Update metadata
+        total = added + updated
+        update_metadata(
+            db,
+            data_type="members",
+            record_count=total,
+            source="seed_file",
+            notes=f"Seeded from {SEED_FILE.name}"
+        )
+        print(f"Updated metadata: {total} members")
 
     finally:
         db.close()

@@ -27,6 +27,7 @@ from api.models import (
     Chamber,
     Party,
 )
+from scripts.utils.metadata import update_metadata
 
 
 def calculate_vote_score(vote: Vote, bill: Bill) -> Optional[float]:
@@ -185,6 +186,16 @@ def calculate_all_positions():
 
         print(f"Positions calculated: {positions_calculated}")
         print(f"Skipped (no votes): {positions_skipped}")
+
+        # Update metadata
+        update_metadata(
+            db,
+            data_type="positions",
+            record_count=positions_calculated,
+            source="calculated",
+            notes=f"Trade policy positions for {positions_calculated} senators"
+        )
+        print(f"Updated metadata: {positions_calculated} positions")
 
     finally:
         db.close()

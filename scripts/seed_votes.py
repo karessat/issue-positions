@@ -24,6 +24,7 @@ from api.models import (
     Member,
     VoteChoice,
 )
+from scripts.utils.metadata import update_metadata
 
 SEED_FILE = project_root / "data" / "seed" / "trade_votes.json"
 
@@ -154,6 +155,17 @@ def seed_bills_and_votes(data: dict):
         print(f"Seeding complete!")
         print(f"Bills: {bills_added} added, {bills_updated} updated")
         print(f"Votes: {votes_added} added, {votes_skipped} skipped (member not in DB)")
+
+        # Update metadata
+        total_votes = db.query(Vote).count()
+        update_metadata(
+            db,
+            data_type="votes",
+            record_count=total_votes,
+            source="seed_file",
+            notes=f"Seeded from {SEED_FILE.name}"
+        )
+        print(f"Updated metadata: {total_votes} votes")
 
     finally:
         db.close()

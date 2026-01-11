@@ -7,6 +7,7 @@ from .models import (
     Evidence,
     Bill,
     Vote,
+    DataMetadata,
     Chamber,
     Party,
     VoteChoice,
@@ -27,6 +28,7 @@ __all__ = [
     "Evidence",
     "Bill",
     "Vote",
+    "DataMetadata",
     # Enums
     "Chamber",
     "Party",

@@ -36,6 +36,7 @@ from api.models import (
     Member,
     VoteChoice,
 )
+from scripts.utils.metadata import update_metadata
 
 load_dotenv(project_root / ".env")
 
@@ -443,6 +444,17 @@ def collect_votes(congress: int = 118, limit: int = 50):
             print(f"Collection complete!")
             print(f"Bills stored: {bills_stored}")
             print(f"Votes stored: {votes_stored}")
+
+            # Update metadata
+            total_votes = db.query(Vote).count()
+            update_metadata(
+                db,
+                data_type="votes",
+                record_count=total_votes,
+                source="congress_api",
+                notes=f"Fetched from Congress.gov API (Congress {congress})"
+            )
+            print(f"Updated metadata: {total_votes} votes")
 
     finally:
         db.close()
