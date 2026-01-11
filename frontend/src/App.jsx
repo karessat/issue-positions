@@ -120,6 +120,35 @@ function App() {
           />
         )}
 
+        {/* Senators Without Data */}
+        {data.no_data && data.no_data.length > 0 && (
+          <div className="bg-white rounded-lg shadow p-6 mb-8">
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">
+              Insufficient Voting Data ({data.no_data.length})
+            </h3>
+            <p className="text-sm text-gray-500 mb-4">
+              These senators are newly elected or appointed and don't yet have enough
+              trade-related votes to calculate a position.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {data.no_data.map(member => (
+                <span
+                  key={member.member_id}
+                  className={`inline-flex items-center px-3 py-1 rounded-full text-sm ${
+                    member.party === 'D'
+                      ? 'bg-blue-100 text-blue-800'
+                      : member.party === 'R'
+                      ? 'bg-red-100 text-red-800'
+                      : 'bg-purple-100 text-purple-800'
+                  }`}
+                >
+                  {member.name} ({member.state})
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Insights */}
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">

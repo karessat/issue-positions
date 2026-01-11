@@ -115,6 +115,33 @@ def get_positions(
     # Sort by score
     result.sort(key=lambda x: x["score"])
 
+    # Find members without positions
+    positioned_ids = {p["member_id"] for p in result}
+
+    # Get all members in the chamber
+    member_query = db.query(Member)
+    if chamber:
+        if chamber.lower() == "senate":
+            member_query = member_query.filter(Member.chamber == Chamber.SENATE)
+        elif chamber.lower() == "house":
+            member_query = member_query.filter(Member.chamber == Chamber.HOUSE)
+
+    all_members = member_query.all()
+    no_data = []
+    for member in all_members:
+        if member.id not in positioned_ids:
+            no_data.append({
+                "member_id": member.id,
+                "name": member.name,
+                "state": member.state,
+                "party": member.party.value,
+                "chamber": member.chamber.value,
+                "photo_url": member.photo_url,
+            })
+
+    # Sort no_data by name
+    no_data.sort(key=lambda x: x["name"])
+
     return {
         "issue": {
             "name": issue.name,
@@ -125,8 +152,10 @@ def get_positions(
             "spectrum_description": issue.spectrum_description,
         },
         "positions": result,
+        "no_data": no_data,
         "stats": {
             "total": len(result),
+            "no_data_count": len(no_data),
             "by_party": {
                 "D": len([p for p in result if p["party"] == "D"]),
                 "R": len([p for p in result if p["party"] == "R"]),
