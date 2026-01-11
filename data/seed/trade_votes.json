@@ -1,0 +1,114 @@
+{
+  "description": "Key Senate trade-related votes for MVP testing",
+  "issue": "trade-policy",
+  "bills": [
+    {
+      "id": "hr5430-116",
+      "congress": 116,
+      "bill_type": "hr",
+      "bill_number": 5430,
+      "title": "United States-Mexico-Canada Agreement Implementation Act",
+      "short_title": "USMCA Implementation Act",
+      "description": "Implements the United States-Mexico-Canada Agreement (USMCA), replacing NAFTA with updated trade provisions.",
+      "position_indicator": -0.6,
+      "position_reasoning": "YES vote indicates support for international trade agreement (free trade leaning)",
+      "vote_date": "2020-01-16",
+      "roll_call_id": "s1-116",
+      "votes": {
+        "yea": ["B001230", "B001261", "B001267", "B001243", "B001277", "B001288", "B001236", "C001047", "C000127", "C001075", "C001035", "C001088", "C001056", "C001113", "C001095", "C001096", "C000880", "C001098", "D000618", "D000622", "D000563", "E000295", "F000463", "G000359", "G000386", "G000555", "H000601", "H001076", "H001089", "H001046", "H001042", "H001079", "H001061", "H001085", "J000293", "K000384", "K000377", "K000393", "K000383", "K000367", "L000575", "L000577", "L000571", "L000570", "M000133", "M001198", "M000355", "M001176", "M000934", "M001190", "M001153", "M001169", "M001111", "P000174", "P000603", "P000595", "R000122", "R000608", "R000584", "R000615", "S001194", "S000148", "S001217", "S001184", "S001181", "S001203", "S001198", "T000250", "T000278", "T000476", "V000128", "W000805", "W000790", "W000817", "W000802", "W000437", "W000779", "Y000064", "O000171", "W000800"],
+        "nay": ["S000033"],
+        "not_voting": []
+      }
+    },
+    {
+      "id": "s1846-118",
+      "congress": 118,
+      "bill_type": "s",
+      "bill_number": 1846,
+      "title": "Leveling the Playing Field 2.0 Act",
+      "short_title": "Trade Enforcement Act",
+      "description": "Strengthens U.S. trade remedy laws to address unfair trade practices and protect American manufacturers.",
+      "position_indicator": 0.7,
+      "position_reasoning": "YES vote indicates support for trade enforcement/protectionist measures",
+      "vote_date": "2024-03-15",
+      "roll_call_id": "s85-118",
+      "votes": {
+        "yea": ["B001230", "B001243", "B001277", "B001288", "B001319", "B001324", "C001047", "C000127", "C001075", "C001035", "C001088", "C001113", "C001095", "C001096", "C000880", "C001098", "D000618", "D000622", "D000563", "E000295", "F000463", "G000359", "G000386", "G000555", "H000601", "H001076", "H001089", "H001046", "H001042", "H001079", "H001061", "H001085", "J000300", "J000293", "K000384", "K000377", "K000393", "K000367", "L000575", "L000570", "M000133", "M001198", "M000355", "M001176", "M000934", "M001190", "M001153", "M001169", "M001111", "O000171", "P000174", "P000595", "R000122", "R000608", "R000584", "R000615", "S000033", "S001194", "S001227", "S000148", "S001217", "S001184", "S001181", "S001203", "S001198", "T000250", "T000278", "T000476", "V000128", "W000805", "W000790", "W000817", "W000802", "W000437", "W000779", "Y000064", "W000800"],
+        "nay": ["B001261", "B001267", "B001236", "C001056", "L000577", "L000571", "P000603"],
+        "not_voting": ["K000383"]
+      }
+    },
+    {
+      "id": "hr4521-117",
+      "congress": 117,
+      "bill_type": "hr",
+      "bill_number": 4521,
+      "title": "America COMPETES Act of 2022",
+      "short_title": "CHIPS and Science Act",
+      "description": "Invests in domestic semiconductor manufacturing and includes Buy American provisions for federal procurement.",
+      "position_indicator": 0.5,
+      "position_reasoning": "YES vote indicates support for domestic manufacturing incentives (protectionist leaning)",
+      "vote_date": "2022-07-27",
+      "roll_call_id": "s270-117",
+      "votes": {
+        "yea": ["B001230", "B001261", "B001267", "B001243", "B001277", "B001288", "B001236", "C001047", "C000127", "C001075", "C001035", "C001088", "C001056", "C001113", "C001095", "C001096", "C000880", "D000618", "D000622", "D000563", "E000295", "F000463", "G000359", "G000386", "G000555", "H000601", "H001076", "H001046", "H001042", "H001079", "H001061", "H001085", "J000293", "K000384", "K000377", "K000393", "K000383", "K000367", "L000575", "L000570", "M000133", "M001198", "M000355", "M001176", "M000934", "M001190", "M001153", "M001169", "M001111", "P000174", "P000595", "R000122", "R000608", "R000584", "R000615", "S000033", "S001194", "S000148", "S001184", "S001181", "S001203", "S001198", "T000250", "T000278", "V000128", "W000805", "W000790", "W000817", "W000802", "W000437", "W000779", "Y000064", "W000800"],
+        "nay": ["C001098", "H001089", "L000577", "L000571", "P000603", "S001217", "T000476"],
+        "not_voting": []
+      }
+    },
+    {
+      "id": "sjres79-115",
+      "congress": 115,
+      "bill_type": "sjres",
+      "bill_number": 79,
+      "title": "Disapproval of Trump Steel and Aluminum Tariffs",
+      "short_title": "Tariff Disapproval Resolution",
+      "description": "Resolution to disapprove President Trump's steel and aluminum tariffs imposed under Section 232.",
+      "position_indicator": -0.8,
+      "position_reasoning": "YES vote indicates opposition to tariffs (free trade position)",
+      "vote_date": "2019-03-14",
+      "roll_call_id": "s50-116",
+      "votes": {
+        "yea": ["B001267", "C001035", "C001088", "F000062", "G000555", "H001076", "K000384", "K000383", "L000174", "M000133", "M001169", "M001111", "R000122", "S001194", "S000148", "S001181", "V000128", "W000817", "W000802", "W000779"],
+        "nay": ["B001230", "B001261", "B001243", "B001277", "B001288", "B001236", "C001047", "C000127", "C001075", "C001056", "C001113", "C001095", "C001096", "C000880", "C001098", "D000618", "D000622", "D000563", "E000295", "F000463", "G000359", "G000386", "H001089", "H001046", "H001042", "H001079", "H001061", "J000293", "K000393", "K000367", "L000575", "L000577", "L000571", "M001183", "M001198", "M000355", "M001176", "M000934", "M001153", "P000174", "P000603", "P000595", "R000608", "R000584", "R000615", "S000033", "S001217", "S001184", "S001203", "S001198", "T000250", "T000278", "T000476", "W000805", "W000437", "Y000064"],
+        "not_voting": []
+      }
+    },
+    {
+      "id": "hr644-114",
+      "congress": 114,
+      "bill_type": "hr",
+      "bill_number": 644,
+      "title": "Trade Facilitation and Trade Enforcement Act of 2015",
+      "short_title": "Customs Enforcement Act",
+      "description": "Strengthens customs enforcement against unfair trade practices while also facilitating legitimate trade.",
+      "position_indicator": 0.3,
+      "position_reasoning": "Mixed - includes both enforcement (protectionist) and facilitation (free trade) provisions",
+      "vote_date": "2016-02-11",
+      "roll_call_id": "s35-114",
+      "votes": {
+        "yea": ["B001230", "B001261", "B001267", "B001243", "B001277", "B001288", "B001236", "C001047", "C000127", "C001075", "C001035", "C001088", "C001056", "C001095", "C001096", "C000880", "C001098", "D000618", "D000622", "D000563", "E000295", "F000062", "F000463", "G000359", "G000386", "G000555", "H001076", "H001046", "H001042", "H001079", "H001061", "J000293", "K000384", "K000393", "K000383", "K000367", "L000575", "L000174", "L000577", "M000133", "M001198", "M000355", "M001176", "M000934", "M001153", "M001169", "M001111", "P000174", "P000603", "P000595", "R000122", "R000608", "R000584", "R000615", "S000033", "S001194", "S000148", "S001217", "S001184", "S001181", "S001203", "S001198", "T000250", "T000278", "T000476", "V000128", "W000805", "W000817", "W000802", "W000437", "W000779", "Y000064"],
+        "nay": [],
+        "not_voting": ["L000571"]
+      }
+    },
+    {
+      "id": "hr1314-114",
+      "congress": 114,
+      "bill_type": "hr",
+      "bill_number": 1314,
+      "title": "Trade Promotion Authority Act",
+      "short_title": "TPA/Fast Track Authority",
+      "description": "Grants the President trade promotion authority (fast track) to negotiate trade agreements.",
+      "position_indicator": -0.9,
+      "position_reasoning": "YES vote strongly indicates support for free trade agenda and executive trade authority",
+      "vote_date": "2015-06-24",
+      "roll_call_id": "s219-114",
+      "votes": {
+        "yea": ["B001261", "B001236", "C001047", "C001075", "C001035", "C001056", "C001095", "C001096", "C000880", "C001098", "D000618", "E000295", "F000463", "G000359", "G000386", "H001079", "H001061", "J000293", "K000393", "L000575", "L000577", "M001198", "M000355", "M000934", "M001153", "P000603", "R000584", "R000615", "S001217", "S001184", "S001198", "T000250", "T000278", "T000476", "W000437", "Y000064"],
+        "nay": ["B001230", "B001267", "B001243", "B001277", "B001288", "C000127", "C001088", "D000622", "D000563", "F000062", "G000555", "H001076", "H001046", "H001042", "K000384", "K000383", "K000367", "L000174", "M000133", "M001176", "M001169", "M001111", "P000174", "P000595", "R000122", "R000608", "S000033", "S001194", "S000148", "S001181", "S001203", "V000128", "W000805", "W000817", "W000802", "W000779"],
+        "not_voting": ["L000571"]
+      }
+    }
+  ]
+}
