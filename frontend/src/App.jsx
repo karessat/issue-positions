@@ -61,12 +61,31 @@ function App() {
           <h2 className="text-2xl font-semibold text-gray-800">
             {data.issue.name}
           </h2>
-          <p className="mt-2 text-gray-600">
-            {data.positions.length} senators positioned based on voting records
-          </p>
 
-          {/* Party breakdown */}
-          <div className="mt-4 flex gap-6 text-sm">
+          {/* Issue Description */}
+          {data.issue.description && (
+            <p className="mt-3 text-gray-700 leading-relaxed">
+              {data.issue.description}
+            </p>
+          )}
+
+          {/* Spectrum Explanation */}
+          {data.issue.spectrum_description && (
+            <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="flex items-center gap-4 text-sm">
+                <span className="font-medium text-blue-600">{data.issue.spectrum_left_label}</span>
+                <span className="flex-1 text-center text-gray-400">← Spectrum →</span>
+                <span className="font-medium text-red-600">{data.issue.spectrum_right_label}</span>
+              </div>
+              <p className="mt-2 text-sm text-gray-600">
+                {data.issue.spectrum_description}
+              </p>
+            </div>
+          )}
+
+          {/* Stats */}
+          <div className="mt-4 pt-4 border-t border-gray-100 flex flex-wrap gap-6 text-sm">
+            <span className="text-gray-500">{data.positions.length} senators positioned</span>
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-blue-500"></span>
               <span>Democrats: {data.stats.by_party.D}</span>

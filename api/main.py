@@ -119,8 +119,10 @@ def get_positions(
         "issue": {
             "name": issue.name,
             "slug": issue.slug,
+            "description": issue.description,
             "spectrum_left_label": issue.spectrum_left_label,
             "spectrum_right_label": issue.spectrum_right_label,
+            "spectrum_description": issue.spectrum_description,
         },
         "positions": result,
         "stats": {
