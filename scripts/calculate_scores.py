@@ -23,11 +23,18 @@ from api.models import (
     Vote,
     Position,
     Issue,
+    Evidence,
+    EvidenceType,
     VoteChoice,
     Chamber,
     Party,
 )
 from scripts.utils.metadata import update_metadata
+
+# Weights for combining different evidence types
+VOTE_WEIGHT = 0.6      # Votes are strongest signal (actions)
+STATEMENT_WEIGHT = 0.4  # Statements are secondary (words)
+# RATING_WEIGHT = 0.15  # Future: interest group ratings
 
 
 def calculate_vote_score(vote: Vote, bill: Bill) -> Optional[float]:
@@ -50,72 +57,178 @@ def calculate_vote_score(vote: Vote, bill: Bill) -> Optional[float]:
         return None
 
 
+def calculate_statement_score(db, member: Member, issue: Issue) -> dict:
+    """
+    Calculate a member's position score from analyzed statements.
+
+    Returns dict with:
+        - score: float from -1.0 to +1.0 (or None if no data)
+        - confidence: float from 0.0 to 1.0
+        - statement_count: number of statements used
+    """
+    # Get position for this member/issue to find evidence
+    position = db.query(Position).filter(
+        Position.member_id == member.id,
+        Position.issue_id == issue.id,
+    ).first()
+
+    if not position:
+        return {"score": None, "confidence": 0, "statement_count": 0}
+
+    # Get statement evidence
+    evidence_records = db.query(Evidence).filter(
+        Evidence.position_id == position.id,
+        Evidence.type == EvidenceType.STATEMENT,
+        Evidence.extracted_position.isnot(None),
+    ).all()
+
+    if not evidence_records:
+        return {"score": None, "confidence": 0, "statement_count": 0}
+
+    # Calculate weighted average (weight by extraction confidence)
+    total_weight = 0
+    weighted_sum = 0
+
+    for ev in evidence_records:
+        weight = ev.extraction_confidence or 0.5
+        weighted_sum += ev.extracted_position * weight
+        total_weight += weight
+
+    if total_weight == 0:
+        return {"score": None, "confidence": 0, "statement_count": 0}
+
+    score = weighted_sum / total_weight
+    score = max(-1.0, min(1.0, score))
+
+    # Confidence based on number of statements
+    max_statements_for_full_confidence = 3
+    confidence = min(1.0, len(evidence_records) / max_statements_for_full_confidence)
+
+    return {
+        "score": score,
+        "confidence": confidence,
+        "statement_count": len(evidence_records),
+    }
+
+
 def calculate_member_position(db, member: Member, issue_slug: str = "trade-policy") -> dict:
     """
     Calculate a member's position score on an issue.
 
+    Combines vote scores and statement scores using weighted average.
+
     Returns dict with:
         - score: float from -1.0 to +1.0
         - confidence: float from 0.0 to 1.0
+        - vote_score: score from votes only
+        - statement_score: score from statements only
         - vote_count: number of votes used
+        - statement_count: number of statements used
         - votes: list of individual vote contributions
     """
+    # Get the issue
+    issue = db.query(Issue).filter(Issue.slug == issue_slug).first()
+
+    # === VOTE SCORE ===
     # Get all bills tagged with this issue
     bills = db.query(Bill).filter(
         Bill.issue_tags.contains([issue_slug])
     ).all()
 
-    if not bills:
-        return {"score": None, "confidence": 0, "vote_count": 0, "votes": []}
-
-    bill_ids = [b.id for b in bills]
-    bill_map = {b.id: b for b in bills}
-
-    # Get member's votes on these bills
-    votes = db.query(Vote).filter(
-        Vote.member_id == member.id,
-        Vote.bill_id.in_(bill_ids)
-    ).all()
-
-    # Calculate score contributions
-    contributions = []
+    vote_score = None
+    vote_confidence = 0
+    vote_count = 0
     vote_details = []
 
-    for vote in votes:
-        bill = bill_map.get(vote.bill_id)
-        if not bill:
-            continue
+    if bills:
+        bill_ids = [b.id for b in bills]
+        bill_map = {b.id: b for b in bills}
 
-        score_contribution = calculate_vote_score(vote, bill)
+        # Get member's votes on these bills
+        votes = db.query(Vote).filter(
+            Vote.member_id == member.id,
+            Vote.bill_id.in_(bill_ids)
+        ).all()
 
-        if score_contribution is not None:
-            contributions.append(score_contribution)
-            vote_details.append({
-                "bill_id": bill.id,
-                "bill_title": bill.short_title or bill.title,
-                "vote": vote.vote.value,
-                "bill_indicator": bill.position_indicator,
-                "contribution": score_contribution,
-            })
+        # Calculate score contributions
+        contributions = []
 
-    if not contributions:
-        return {"score": None, "confidence": 0, "vote_count": 0, "votes": []}
+        for vote in votes:
+            bill = bill_map.get(vote.bill_id)
+            if not bill:
+                continue
 
-    # Calculate average score
-    score = sum(contributions) / len(contributions)
+            score_contribution = calculate_vote_score(vote, bill)
 
-    # Clamp to -1 to 1 range
-    score = max(-1.0, min(1.0, score))
+            if score_contribution is not None:
+                contributions.append(score_contribution)
+                vote_details.append({
+                    "bill_id": bill.id,
+                    "bill_title": bill.short_title or bill.title,
+                    "vote": vote.vote.value,
+                    "bill_indicator": bill.position_indicator,
+                    "contribution": score_contribution,
+                })
 
-    # Calculate confidence based on vote count
-    # More votes = higher confidence, max confidence at 5+ votes
-    max_votes_for_full_confidence = 5
-    confidence = min(1.0, len(contributions) / max_votes_for_full_confidence)
+        if contributions:
+            vote_score = sum(contributions) / len(contributions)
+            vote_score = max(-1.0, min(1.0, vote_score))
+            vote_count = len(contributions)
+            max_votes_for_full_confidence = 5
+            vote_confidence = min(1.0, vote_count / max_votes_for_full_confidence)
+
+    # === STATEMENT SCORE ===
+    statement_data = {"score": None, "confidence": 0, "statement_count": 0}
+    if issue:
+        statement_data = calculate_statement_score(db, member, issue)
+
+    statement_score = statement_data["score"]
+    statement_confidence = statement_data["confidence"]
+    statement_count = statement_data["statement_count"]
+
+    # === COMBINE SCORES ===
+    # Use weighted average of available scores
+    if vote_score is None and statement_score is None:
+        return {
+            "score": None,
+            "confidence": 0,
+            "vote_score": None,
+            "statement_score": None,
+            "vote_count": 0,
+            "statement_count": 0,
+            "votes": [],
+        }
+
+    # Calculate combined score
+    if vote_score is not None and statement_score is not None:
+        # Both available - use weighted average
+        total_weight = VOTE_WEIGHT + STATEMENT_WEIGHT
+        combined_score = (
+            (vote_score * VOTE_WEIGHT + statement_score * STATEMENT_WEIGHT)
+            / total_weight
+        )
+        combined_confidence = (
+            (vote_confidence * VOTE_WEIGHT + statement_confidence * STATEMENT_WEIGHT)
+            / total_weight
+        )
+    elif vote_score is not None:
+        # Only votes
+        combined_score = vote_score
+        combined_confidence = vote_confidence * 0.8  # Slightly lower without statement confirmation
+    else:
+        # Only statements
+        combined_score = statement_score
+        combined_confidence = statement_confidence * 0.6  # Lower confidence without vote data
+
+    combined_score = max(-1.0, min(1.0, combined_score))
 
     return {
-        "score": score,
-        "confidence": confidence,
-        "vote_count": len(contributions),
+        "score": combined_score,
+        "confidence": combined_confidence,
+        "vote_score": vote_score,
+        "statement_score": statement_score,
+        "vote_count": vote_count,
+        "statement_count": statement_count,
         "votes": vote_details,
     }
 
@@ -131,11 +244,14 @@ def store_position(db, member: Member, issue: Issue, position_data: dict):
         Position.issue_id == issue.id,
     ).first()
 
+    evidence_count = position_data["vote_count"] + position_data.get("statement_count", 0)
+
     if existing:
         existing.score = position_data["score"]
         existing.confidence = position_data["confidence"]
-        existing.vote_score = position_data["score"]  # For now, only using votes
-        existing.evidence_count = position_data["vote_count"]
+        existing.vote_score = position_data.get("vote_score")
+        existing.statement_score = position_data.get("statement_score")
+        existing.evidence_count = evidence_count
         existing.last_updated = datetime.utcnow()
         return existing
     else:
@@ -144,8 +260,9 @@ def store_position(db, member: Member, issue: Issue, position_data: dict):
             issue_id=issue.id,
             score=position_data["score"],
             confidence=position_data["confidence"],
-            vote_score=position_data["score"],
-            evidence_count=position_data["vote_count"],
+            vote_score=position_data.get("vote_score"),
+            statement_score=position_data.get("statement_score"),
+            evidence_count=evidence_count,
         )
         db.add(position)
         return position

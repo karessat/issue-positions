@@ -259,6 +259,51 @@ class Vote(Base):
         return f"<Vote {self.member_id} on {self.bill_id}: {self.vote.value}>"
 
 
+class Statement(Base):
+    """
+    Raw statements from Congressional Record floor speeches.
+
+    These are collected before AI analysis. After analysis,
+    relevant statements become Evidence records linked to Positions.
+    """
+    __tablename__ = "statements"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    member_id = Column(String(7), ForeignKey("members.id"), nullable=False)
+
+    # Statement content
+    text = Column(Text, nullable=False, doc="Full text of the statement")
+    title = Column(String(500), doc="Title or topic if available")
+
+    # Source information
+    source = Column(String(50), default="congressional_record",
+                    doc="Source: 'congressional_record', 'press_release', etc.")
+    source_url = Column(String(1000), doc="URL to the original source")
+    source_date = Column(DateTime, nullable=False, doc="Date of the statement")
+
+    # Congressional Record specific
+    cr_page = Column(String(20), doc="Congressional Record page number")
+    cr_section = Column(String(50), doc="Section: 'SENATE', 'HOUSE', etc.")
+    congress = Column(Integer, doc="Congress number (e.g., 118)")
+
+    # Issue relevance (stored as JSON array of issue slugs)
+    issue_tags = Column(JSON, default=list, doc="Issues this statement relates to")
+
+    # Analysis status
+    analyzed = Column(Integer, default=0, doc="0=pending, 1=analyzed, -1=not_relevant")
+    analysis_date = Column(DateTime, doc="When AI analysis was performed")
+
+    # Metadata
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    # Relationships
+    member = relationship("Member", backref="statements")
+
+    def __repr__(self):
+        preview = self.text[:50] + "..." if len(self.text) > 50 else self.text
+        return f"<Statement {self.id} by {self.member_id}: {preview}>"
+
+
 class DataMetadata(Base):
     """
     Tracks when different data types were last updated.

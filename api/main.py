@@ -11,6 +11,7 @@ from .models import (
     Position,
     Bill,
     Vote,
+    Statement,
     DataMetadata,
     Chamber,
     Party,
@@ -211,6 +212,92 @@ def get_member(member_id: str, db: Session = Depends(get_db)):
         "evidence": {
             "votes": vote_evidence,
         },
+    }
+
+
+@app.get("/api/members/{member_id}/statements")
+def get_member_statements(
+    member_id: str,
+    issue: Optional[str] = None,
+    db: Session = Depends(get_db),
+):
+    """Get statements for a specific member, optionally filtered by issue."""
+    member = db.query(Member).filter(Member.id == member_id).first()
+    if not member:
+        raise HTTPException(status_code=404, detail="Member not found")
+
+    query = db.query(Statement).filter(Statement.member_id == member_id)
+
+    # Filter by issue if specified
+    if issue:
+        # Use JSON contains check (SQLite syntax)
+        query = query.filter(Statement.issue_tags.contains(issue))
+
+    # Order by date, most recent first
+    statements = query.order_by(Statement.source_date.desc()).all()
+
+    return {
+        "member_id": member_id,
+        "member_name": member.name,
+        "statements": [
+            {
+                "id": stmt.id,
+                "text": stmt.text,
+                "title": stmt.title,
+                "source": stmt.source,
+                "source_url": stmt.source_url,
+                "source_date": stmt.source_date.isoformat() if stmt.source_date else None,
+                "cr_page": stmt.cr_page,
+                "issue_tags": stmt.issue_tags,
+                "analyzed": stmt.analyzed,
+            }
+            for stmt in statements
+        ],
+        "count": len(statements),
+    }
+
+
+@app.get("/api/statements")
+def get_statements(
+    issue: Optional[str] = None,
+    member_id: Optional[str] = None,
+    limit: int = 50,
+    db: Session = Depends(get_db),
+):
+    """Get all statements, optionally filtered by issue or member."""
+    query = db.query(Statement)
+
+    if issue:
+        query = query.filter(Statement.issue_tags.contains(issue))
+
+    if member_id:
+        query = query.filter(Statement.member_id == member_id)
+
+    # Order by date, most recent first
+    statements = query.order_by(Statement.source_date.desc()).limit(limit).all()
+
+    result = []
+    for stmt in statements:
+        member = db.query(Member).filter(Member.id == stmt.member_id).first()
+        result.append({
+            "id": stmt.id,
+            "member_id": stmt.member_id,
+            "member_name": member.name if member else "Unknown",
+            "member_party": member.party.value if member else None,
+            "member_state": member.state if member else None,
+            "text": stmt.text,
+            "title": stmt.title,
+            "source": stmt.source,
+            "source_url": stmt.source_url,
+            "source_date": stmt.source_date.isoformat() if stmt.source_date else None,
+            "cr_page": stmt.cr_page,
+            "issue_tags": stmt.issue_tags,
+        })
+
+    return {
+        "statements": result,
+        "count": len(result),
+        "limit": limit,
     }
 
 

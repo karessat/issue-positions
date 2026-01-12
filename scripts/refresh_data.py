@@ -21,7 +21,7 @@ from datetime import datetime, timedelta
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from api.models import SessionLocal, DataMetadata, Member, Vote, Position
+from api.models import SessionLocal, DataMetadata, Member, Vote, Position, Statement
 from scripts.utils.metadata import get_all_metadata, is_stale, format_age, update_metadata
 
 
@@ -46,11 +46,13 @@ def print_status(db):
     member_count = db.query(Member).count()
     vote_count = db.query(Vote).count()
     position_count = db.query(Position).count()
+    statement_count = db.query(Statement).count()
 
     actual_counts = {
         "members": member_count,
         "votes": vote_count,
         "positions": position_count,
+        "statements": statement_count,
     }
 
     for metadata in metadata_list:
@@ -67,7 +69,7 @@ def print_status(db):
         print()
 
     # Check for missing metadata
-    expected_types = {"members", "votes", "positions"}
+    expected_types = {"members", "votes", "positions", "statements"}
     existing_types = {m.data_type for m in metadata_list}
     missing = expected_types - existing_types
 
@@ -153,6 +155,34 @@ def refresh_positions(db):
         return False
 
 
+def refresh_statements(db, use_api: bool = False):
+    """Refresh statement data."""
+    print("\n" + "=" * 50)
+    print("REFRESHING STATEMENTS")
+    print("=" * 50)
+
+    if use_api:
+        print("Using Congressional Record API...")
+        try:
+            from scripts.collect_statements import collect_statements
+            collect_statements(days=30)
+            return True
+        except Exception as e:
+            print(f"API collection failed: {e}")
+            print("Falling back to seed file...")
+
+    # Use seed file
+    print("Using seed file...")
+    from scripts.seed_statements import load_seed_data, seed_statements
+    try:
+        data = load_seed_data()
+        seed_statements(data)
+        return True
+    except Exception as e:
+        print(f"Seeding failed: {e}")
+        return False
+
+
 def check_and_refresh(max_age_days: int = 30, force: bool = False, use_api: bool = False):
     """Check all data types and refresh if stale."""
     db = SessionLocal()
@@ -165,6 +195,7 @@ def check_and_refresh(max_age_days: int = 30, force: bool = False, use_api: bool
         needs_refresh = {
             "members": force or is_stale(db, "members", max_age_days),
             "votes": force or is_stale(db, "votes", max_age_days),
+            "statements": force or is_stale(db, "statements", max_age_days),
             "positions": force or is_stale(db, "positions", max_age_days),
         }
 
@@ -192,6 +223,10 @@ def check_and_refresh(max_age_days: int = 30, force: bool = False, use_api: bool
 
         if needs_refresh["votes"]:
             if not refresh_votes(db, use_api):
+                success = False
+
+        if needs_refresh["statements"]:
+            if not refresh_statements(db, use_api):
                 success = False
 
         # Always recalculate positions if members or votes changed
